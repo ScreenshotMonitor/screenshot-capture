@@ -1,4 +1,4 @@
-﻿namespace Pranas.ScreenshotCapture.Common
+﻿namespace Pranas.ScreenshotCapture
 {
 	/// <summary>
 	/// Os versions

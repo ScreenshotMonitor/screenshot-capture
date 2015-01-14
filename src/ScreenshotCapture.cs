@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Pranas.ScreenshotCapture.Common
+namespace Pranas.ScreenshotCapture
 {
 	/// <summary>
 	/// ScreenshotCapture

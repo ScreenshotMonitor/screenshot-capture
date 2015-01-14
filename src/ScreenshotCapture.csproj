@@ -7,10 +7,11 @@
     <ProjectGuid>{7361C8BD-7F0A-4EAA-89D2-954F5F26346B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ScreenshotCapture.Commom</RootNamespace>
-    <AssemblyName>ScreenshotCapture.Commom</AssemblyName>
+    <RootNamespace>Pranas.ScreenshotCapture</RootNamespace>
+    <AssemblyName>Pranas.ScreenshotCapture</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,7 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\ScreenshotCapture.Commom.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Pranas.ScreenshotCapture.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,7 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ScreenshotCapture.Commom.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Pranas.ScreenshotCapture.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
