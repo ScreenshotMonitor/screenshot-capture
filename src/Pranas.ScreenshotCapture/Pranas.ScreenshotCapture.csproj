@@ -38,7 +38,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OsType.cs" />
+    <Compile Include="OsDetector.cs" />
     <Compile Include="ScreenshotCapture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
