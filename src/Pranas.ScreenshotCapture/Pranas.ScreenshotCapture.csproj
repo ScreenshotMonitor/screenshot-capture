@@ -7,7 +7,7 @@
     <ProjectGuid>{7361C8BD-7F0A-4EAA-89D2-954F5F26346B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Pranas.ScreenshotCapture</RootNamespace>
+    <RootNamespace>Pranas</RootNamespace>
     <AssemblyName>Pranas.ScreenshotCapture</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -23,7 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Pranas.ScreenshotCapture.xml</DocumentationFile>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,7 +41,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OsDetector.cs" />
     <Compile Include="ScreenshotCapture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
