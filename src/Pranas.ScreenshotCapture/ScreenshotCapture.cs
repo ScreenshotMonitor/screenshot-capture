@@ -25,11 +25,11 @@ namespace Pranas.ScreenshotCapture
         {
             try
             {
-                WindowsCapture(onlyPrimaryScreen);
+               return WindowsCapture(onlyPrimaryScreen);
             }
-            catch (NotImplementedException)
+            catch (Exception)
             {
-                OsXCapture(onlyPrimaryScreen);
+				return OsXCapture(onlyPrimaryScreen);
             }
             
             //switch (OsDetector.DetectOs())
@@ -47,35 +47,30 @@ namespace Pranas.ScreenshotCapture
         #endregion
 
         #region  Private static methods
-        //private static byte[] ImageMagicCapture(string filename, bool needDeleteFile, bool onlyPrimaryScreen)
-        //{
-        //    return ExecuteCaptureProcess("import", "-window root ", filename, needDeleteFile);
-        //}
 
-        private static byte[] OsXCapture(string filename, bool needDeleteFile, bool onlyPrimaryScreen)
+
+		//private static Image ImageMagicCapture(bool onlyPrimaryScreen)
+		//{
+		//	return ExecuteCaptureProcess("import", "-window root ");
+		//}
+
+        private static Image OsXCapture(bool onlyPrimaryScreen)
         {
             var data = ExecuteCaptureProcess(
                 "screencapture",
-                string.Format("{0} -T0 -tpng -S -x", onlyPrimaryScreen ? "-m" : ""),
-                filename,
-                needDeleteFile);
+                string.Format("{0} -T0 -tpng -S -x", onlyPrimaryScreen ? "-m" : ""));
             return data;
         }
 
 
-        /// <summary>
-        /// Start execute process with parameters	
-        /// </summary>
-        /// <param name="execModule">Application name</param>
-        /// <param name="parameters">Command line parameters</param>
-        /// <param name="fileName">Destination file name</param>
-        /// <param name="needDeleteFile"></param>
-        /// <returns>Bytes for destination image</returns>
-        private static byte[] ExecuteCaptureProcess(string execModule, string parameters)
+	    /// <summary>
+	    /// Start execute process with parameters	
+	    /// </summary>
+	    /// <param name="execModule">Application name</param>
+	    /// <param name="parameters">Command line parameters</param>
+	    /// <returns>Bytes for destination image</returns>
+	    private static Image ExecuteCaptureProcess(string execModule, string parameters)
         {
-            //var tempDir = (Environment.GetEnvironmentVariable("TEMP")
-            //             ?? Environment.GetEnvironmentVariable("TMPDIR") ?? Path.GetTempPath());
-
             var imageFileName = Path.Combine(Path.GetTempPath(), string.Format("screenshot_{0}.jpg", Guid.NewGuid()));
 
             var process = Process.Start(execModule, string.Format("{0} {1}", parameters, imageFileName));
@@ -92,7 +87,7 @@ namespace Pranas.ScreenshotCapture
 
             try
             {
-                return File.ReadAllBytes(imageFileName);
+				return Image.FromFile(imageFileName);
             }
             finally
             {
@@ -126,22 +121,19 @@ namespace Pranas.ScreenshotCapture
         //    }
         //}
 
-        /// <summary>
-        /// Capture screenshots with .NET standard features
-        /// </summary>
-        /// <param name="onlyPrimaryScreen"></param>
-        /// <returns>Return bytes of screenshot image</returns>
-        private static Image WindowsCapture(bool onlyPrimaryScreen)
-        {
-            if (!onlyPrimaryScreen)
-            {
-                var bitmaps = (Screen.AllScreens.OrderBy(s => s.Bounds.Left).Select(ScreenCapture));
-                return CombineBitmap(bitmaps);
-            }
-            return ScreenCapture(Screen.PrimaryScreen);
-        }
+	    /// <summary>
+	    /// Capture screenshots with .NET standard features
+	    /// </summary>
+	    /// <param name="onlyPrimaryScreen"></param>
+	    /// <returns>Return bytes of screenshot image</returns>
+	    private static Image WindowsCapture(bool onlyPrimaryScreen)
+	    {
+		    if (onlyPrimaryScreen) return ScreenCapture(Screen.PrimaryScreen);
+		    var bitmaps = (Screen.AllScreens.OrderBy(s => s.Bounds.Left).Select(ScreenCapture)).ToArray();
+		    return CombineBitmap(bitmaps);
+	    }
 
-        /// <summary>
+	    /// <summary>
         /// Create screenshot of one screen
         /// </summary>
         /// <param name="screen"></param>

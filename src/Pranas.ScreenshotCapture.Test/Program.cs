@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
+using System.IO;
 
 namespace Pranas.ScreenshotCapture.Test
 {
@@ -10,10 +8,12 @@ namespace Pranas.ScreenshotCapture.Test
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Taking screenshot...");
-            var screen = ScreenshotCapture.TakeScreenshot();
-            screen.Save("Screenshot.jpg", ImageFormat.Jpeg);
+	        Console.WriteLine("Taking screenshot... OS : {0} ", (int) Environment.OSVersion.Platform);
+			
+	        var screen = ScreenshotCapture.TakeScreenshot();
+	        screen.Save(Path.Combine(Environment.CurrentDirectory, "Screenshot.jpg"), ImageFormat.Jpeg);
             Console.WriteLine("Done");
+	        Console.ReadLine();
         }
     }
 }
