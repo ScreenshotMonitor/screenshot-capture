@@ -9,9 +9,11 @@ namespace Pranas.Test
         static void Main(string[] args)
         {
 	        Console.WriteLine("Taking screenshot... OS : {0} ",  Environment.OSVersion.Platform);
-			
-	        var screen = ScreenshotCapture.TakeScreenshot();
-	        screen.Save(Path.Combine(Environment.CurrentDirectory, "Screenshot.jpg"), ImageFormat.Jpeg);
+
+	        using (var screen = ScreenshotCapture.TakeScreenshot())
+	        {
+		        screen.Save(Path.Combine(Environment.CurrentDirectory, "Screenshot.jpg"), ImageFormat.Jpeg);
+	        }
             Console.WriteLine("Done");
 	        Console.ReadLine();
         }
