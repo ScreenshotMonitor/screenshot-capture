@@ -108,20 +108,25 @@ namespace Pranas
         /// <returns></returns>
         private static Bitmap ScreenCapture(Screen screen)
         {
-            var bitmap = new Bitmap(screen.Bounds.Width, screen.Bounds.Height, PixelFormat.Format32bppArgb);
+			var bounds = screen.Bounds;
+			
+	        if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
+		        bounds = screen.WorkingArea;
+	        
+			var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
 
-            using (var graphics = Graphics.FromImage(bitmap))
-            {
-                graphics.CopyFromScreen(
-                    screen.Bounds.X,
-                    screen.Bounds.Y,
-                    0,
-                    0,
-                    screen.Bounds.Size,
-                    CopyPixelOperation.SourceCopy);
-            }
+			using (var graphics = Graphics.FromImage(bitmap))
+			{
+				graphics.CopyFromScreen(
+					bounds.X,
+					bounds.Y,
+					0,
+					0,
+					bounds.Size,
+					CopyPixelOperation.SourceCopy);
+			}
 
-            return bitmap;
+			return bitmap;
         }
 
         /// <summary>
