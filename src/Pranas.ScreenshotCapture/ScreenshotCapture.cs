@@ -109,11 +109,18 @@ namespace Pranas
         private static Bitmap ScreenCapture(Screen screen)
         {
 			var bounds = screen.Bounds;
-			
+
 	        if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
-		        bounds = screen.WorkingArea;
-	        
-			var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+	        {
+				// Trick  to restore original bounds of screen.
+		        bounds = new Rectangle(
+			        0,
+			        0,
+			        screen.WorkingArea.Width + screen.WorkingArea.X,
+			        screen.WorkingArea.Height + screen.WorkingArea.Y);
+	        }
+
+	        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
 
 			using (var graphics = Graphics.FromImage(bitmap))
 			{
