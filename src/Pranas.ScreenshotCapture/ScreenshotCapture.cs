@@ -120,7 +120,9 @@ namespace Pranas
 			        screen.WorkingArea.Height + screen.WorkingArea.Y);
 	        }
 
-	        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+	        var pixelFormat = new Bitmap(1, 1, Graphics.FromHwnd(IntPtr.Zero)).PixelFormat;
+	      
+	        var bitmap = new Bitmap(bounds.Width, bounds.Height, pixelFormat);
 
 			using (var graphics = Graphics.FromImage(bitmap))
 			{
