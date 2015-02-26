@@ -13,6 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
+using NLog;
+
 namespace Pranas
 {
     /// <summary>
@@ -20,6 +22,8 @@ namespace Pranas
     /// </summary>
     public static class ScreenshotCapture
     {
+		private static readonly Logger Logger = LogManager.GetLogger("");
+
         #region Public static methods
 
         /// <summary>
@@ -33,8 +37,9 @@ namespace Pranas
             {
                 return WindowsCapture(onlyPrimaryScreen);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+	            Logger.ErrorException("", e);
                 return OsXCapture(onlyPrimaryScreen);
             }
         }
@@ -96,6 +101,9 @@ namespace Pranas
         /// <returns>Return bytes of screenshot image</returns>
         private static Image WindowsCapture(bool onlyPrimaryScreen)
         {
+	        Logger.Debug("Only primary: {0}", onlyPrimaryScreen);
+	        Logger.Debug("Screens count: {0}", Screen.AllScreens.Length);
+
             if (onlyPrimaryScreen) return ScreenCapture(Screen.PrimaryScreen);
             var bitmaps = (Screen.AllScreens.OrderBy(s => s.Bounds.Left).Select(ScreenCapture)).ToArray();
             return CombineBitmap(bitmaps);
@@ -112,7 +120,11 @@ namespace Pranas
 
 	        if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
 	        {
-				// Trick  to restore original bounds of screen.
+				Logger.Debug("Bounds not equal with WorkingArea");
+				Logger.Debug("Bounds: {0}",screen.Bounds);
+				Logger.Debug("WorkingArea: {0}", screen.WorkingArea);
+
+		        // Trick  to restore original bounds of screen.
 		        bounds = new Rectangle(
 			        0,
 			        0,
@@ -120,8 +132,44 @@ namespace Pranas
 			        screen.WorkingArea.Height + screen.WorkingArea.Y);
 	        }
 
-	        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+	        Logger.Debug("Screen: {0} Left={1},Top={2},Bits={3}", bounds, bounds.Left, bounds.Top, screen.BitsPerPixel);
+			
+	        foreach (var format in Enum.GetValues(typeof(PixelFormat)))
+	        {
+		        var frm = (PixelFormat)Enum.Parse(typeof(PixelFormat), format.ToString());
+				
+				var  g = Graphics.FromHwnd(IntPtr.Zero);
+				var bm = new Bitmap(10, 10, g);
+				
+				try
+		        {
+					var bmp = new Bitmap(
+					bounds.Width,
+					bounds.Height,
+					frm);
+					using (var graphics = Graphics.FromImage(bmp))
+					{
+						graphics.CopyFromScreen(
+							bounds.X,
+							bounds.Y,
+							0,
+							0,
+							bounds.Size,
+							CopyPixelOperation.SourceCopy);
+					}
 
+					bmp.Save(
+						string.Format("{0}\\logs\\{1}-{2}.jpg", Environment.CurrentDirectory, DateTime.Now.Ticks, format),
+						ImageFormat.Jpeg);
+		        }
+		        catch (Exception)
+		        {
+			     
+		        }
+	        }
+			
+	        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+			
 			using (var graphics = Graphics.FromImage(bitmap))
 			{
 				graphics.CopyFromScreen(
@@ -132,6 +180,10 @@ namespace Pranas
 					bounds.Size,
 					CopyPixelOperation.SourceCopy);
 			}
+
+	        bitmap.Save(
+		        string.Format("{0}\\logs\\{1}.jpg", Environment.CurrentDirectory, DateTime.Now.Ticks),
+		        ImageFormat.Jpeg);
 
 			return bitmap;
         }
@@ -158,6 +210,8 @@ namespace Pranas
 
                 finalImage = new Bitmap(width, height);
 
+	            Logger.Debug("Combine image. Final image: {0}x{1}", finalImage.Width, finalImage.Height);
+
                 using (var g = Graphics.FromImage(finalImage))
                 {
                     g.Clear(Color.Black);
@@ -165,6 +219,11 @@ namespace Pranas
                     var offset = 0;
                     foreach (var image in images)
                     {
+	                    Logger.Debug(
+		                    "Draw image to final image. Offset: {0} width: {1} height: {2}",
+		                    offset,
+		                    image.Width,
+		                    image.Height);
                         g.DrawImage(image,
                             new Rectangle(offset, 0, image.Width, image.Height));
                         offset += image.Width;
@@ -175,6 +234,7 @@ namespace Pranas
             {
                 if (finalImage != null)
                     finalImage.Dispose();
+	            Logger.ErrorException("", ex);
                 throw ex;
             }
             finally
@@ -185,7 +245,6 @@ namespace Pranas
                     image.Dispose();
                 }
             }
-
             return finalImage;
         }
 
