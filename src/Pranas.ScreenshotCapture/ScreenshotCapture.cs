@@ -31,11 +31,11 @@ namespace Pranas
         {
             try
             {
-                return WindowsCapture(onlyPrimaryScreen);
+                return OsXCapture(onlyPrimaryScreen);
             }
             catch (Exception)
             {
-                return OsXCapture(onlyPrimaryScreen);
+                return WindowsCapture(onlyPrimaryScreen);
             }
         }
 
