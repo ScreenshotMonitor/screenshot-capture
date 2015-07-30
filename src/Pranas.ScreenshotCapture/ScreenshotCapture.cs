@@ -52,8 +52,9 @@ namespace Pranas
         {
             var data = ExecuteCaptureProcess(
                 "screencapture",
-                string.Format("{0} -T0 -tpng -S -x", onlyPrimaryScreen ? "-m" : ""));
-            return data;
+                string.Format("{0} -T0 -tpng -S -x", onlyPrimaryScreen ? "-m" : ""),
+				onlyPrimaryScreen ? 1 : 3);
+            return CombineBitmap(data);
         }
 
 
@@ -62,30 +63,35 @@ namespace Pranas
         /// </summary>
         /// <param name="execModule">Application name</param>
         /// <param name="parameters">Command line parameters</param>
+        /// <param name="screensCounter"></param>
         /// <returns>Bytes for destination image</returns>
-        private static Image ExecuteCaptureProcess(string execModule, string parameters)
+        private static Image[] ExecuteCaptureProcess(string execModule, string parameters, int screensCounter)
         {
-            var imageFileName = Path.Combine(Path.GetTempPath(), string.Format("screenshot_{0}.jpg", Guid.NewGuid()));
+            var files = new List<string>();
 
-            var process = Process.Start(execModule, string.Format("{0} {1}", parameters, imageFileName));
+            for (var item = 0; item < screensCounter; item++)
+                files.Add(Path.Combine(Path.GetTempPath(), string.Format("screenshot_{0}.jpg", Guid.NewGuid())));
+
+            var process = Process.Start(execModule,
+                string.Format("{0} {1}", parameters, files.Aggregate((x, y) => x + " " + y)));
+
             if (process == null)
-            {
                 throw new InvalidOperationException(string.Format("Executable of '{0}' was not found", execModule));
-            }
+
             process.WaitForExit();
 
-            if (!File.Exists(imageFileName))
-            {
-                throw new InvalidOperationException(string.Format("Failed to capture screenshot using {0}", execModule));
-            }
+			for (var i = files.Count-1; i >= 0; i--) {
+				if (!File.Exists (files [i]))
+					files.Remove (files [i]);					
+			}
 
             try
-            {
-                return Image.FromFile(imageFileName);
+            {			
+                return files.Select(Image.FromFile).ToArray();
             }
             finally
             {
-                File.Delete(imageFileName);
+               files.ForEach(File.Delete);
             }
         }
 
@@ -108,34 +114,34 @@ namespace Pranas
         /// <returns></returns>
         private static Bitmap ScreenCapture(Screen screen)
         {
-			var bounds = screen.Bounds;
+            var bounds = screen.Bounds;
 
-	        if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
-	        {
-				// Trick  to restore original bounds of screen.
-		        bounds = new Rectangle(
-			        0,
-			        0,
-			        screen.WorkingArea.Width + screen.WorkingArea.X,
-			        screen.WorkingArea.Height + screen.WorkingArea.Y);
-	        }
+            if (screen.Bounds.Width/screen.WorkingArea.Width > 1 || screen.Bounds.Height/screen.WorkingArea.Height > 1)
+            {
+                // Trick  to restore original bounds of screen.
+                bounds = new Rectangle(
+                    0,
+                    0,
+                    screen.WorkingArea.Width + screen.WorkingArea.X,
+                    screen.WorkingArea.Height + screen.WorkingArea.Y);
+            }
 
-	        var pixelFormat = new Bitmap(1, 1, Graphics.FromHwnd(IntPtr.Zero)).PixelFormat;
-	      
-	        var bitmap = new Bitmap(bounds.Width, bounds.Height, pixelFormat);
+            var pixelFormat = new Bitmap(1, 1, Graphics.FromHwnd(IntPtr.Zero)).PixelFormat;
 
-			using (var graphics = Graphics.FromImage(bitmap))
-			{
-				graphics.CopyFromScreen(
-					bounds.X,
-					bounds.Y,
-					0,
-					0,
-					bounds.Size,
-					CopyPixelOperation.SourceCopy);
-			}
+            var bitmap = new Bitmap(bounds.Width, bounds.Height, pixelFormat);
 
-			return bitmap;
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.CopyFromScreen(
+                    bounds.X,
+                    bounds.Y,
+                    0,
+                    0,
+                    bounds.Size,
+                    CopyPixelOperation.SourceCopy);
+            }
+
+            return bitmap;
         }
 
         /// <summary>
@@ -145,6 +151,9 @@ namespace Pranas
         /// <returns>Combined image</returns>
         private static Image CombineBitmap(ICollection<Image> images)
         {
+            if (images.Count == 1)
+                return images.First();
+
             Image finalImage = null;
 
             try
