@@ -8,9 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Pranas
@@ -18,8 +17,51 @@ namespace Pranas
     /// <summary>
     ///     ScreenshotCapture
     /// </summary>
+    /// 
+
+
     public static class ScreenshotCapture
     {
+        static ConsoleColor defaultColor = ConsoleColor.Gray;
+
+        public static int Main(string[] args)
+        {
+            var all = true;
+            string file = null;
+
+            try
+            {
+                for (var i = 0; i < args.Length;)
+                {
+                    var arg = args[i].ToLower();
+                    if (arg.StartsWith("-"))
+                    {
+                        if (arg.EndsWith("all"))
+                            all = bool.Parse(args[i + 1]);
+                        else if ((arg.EndsWith("file")))
+                            file = args[i + 1];
+                    }
+                    i++;
+                }
+                if (string.IsNullOrEmpty(file))
+                    throw new Exception("Paramenter '-file' is invalid");
+
+                var image = TakeScreenshot(!all);
+                image.Save(file);
+                Console.Out.WriteLine(file);
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine(e.ToString());
+                Console.ForegroundColor = defaultColor;
+                return 1;
+            }
+
+            return 0;
+        }
+
+
         #region Public static methods
 
         /// <summary>
@@ -53,7 +95,7 @@ namespace Pranas
             var data = ExecuteCaptureProcess(
                 "screencapture",
                 string.Format("{0} -T0 -tpng -S -x", onlyPrimaryScreen ? "-m" : ""),
-				onlyPrimaryScreen ? 1 : 3);
+                onlyPrimaryScreen ? 1 : 3);
             return CombineBitmap(data);
         }
 
@@ -68,30 +110,36 @@ namespace Pranas
         private static Image[] ExecuteCaptureProcess(string execModule, string parameters, int screensCounter)
         {
             var files = new List<string>();
+            var name = new StringBuilder();
 
             for (var item = 0; item < screensCounter; item++)
                 files.Add(Path.Combine(Path.GetTempPath(), string.Format("screenshot_{0}.jpg", Guid.NewGuid())));
 
+            files.ForEach(f => name.AppendFormat("{0} ", files));
+
             var process = Process.Start(execModule,
-                string.Format("{0} {1}", parameters, files.Aggregate((x, y) => x + " " + y)));
+                string.Format("{0} {1}", parameters, name));
 
             if (process == null)
                 throw new InvalidOperationException(string.Format("Executable of '{0}' was not found", execModule));
 
             process.WaitForExit();
 
-			for (var i = files.Count-1; i >= 0; i--) {
-				if (!File.Exists (files [i]))
-					files.Remove (files [i]);					
-			}
+            for (var i = files.Count - 1; i >= 0; i--)
+            {
+                if (!File.Exists(files[i]))
+                    files.Remove(files[i]);
+            }
 
             try
-            {			
-                return files.Select(Image.FromFile).ToArray();
+            {
+                List<Image> images = new List<Image>();
+                files.ForEach(f => images.Add(Image.FromFile(f)));
+                return images.ToArray();
             }
             finally
             {
-               files.ForEach(File.Delete);
+                files.ForEach(File.Delete);
             }
         }
 
@@ -103,8 +151,12 @@ namespace Pranas
         private static Image WindowsCapture(bool onlyPrimaryScreen)
         {
             if (onlyPrimaryScreen) return ScreenCapture(Screen.PrimaryScreen);
-            var bitmaps = (Screen.AllScreens.OrderBy(s => s.Bounds.Left).Select(ScreenCapture)).ToArray();
-            return CombineBitmap(bitmaps);
+            var screens = Order(Screen.AllScreens);
+            var bitmaps = new List<Bitmap>();
+            foreach (var screen in screens)
+                bitmaps.Add(ScreenCapture(screen));
+
+            return CombineBitmap(bitmaps.ToArray());
         }
 
         /// <summary>
@@ -116,7 +168,7 @@ namespace Pranas
         {
             var bounds = screen.Bounds;
 
-            if (screen.Bounds.Width/screen.WorkingArea.Width > 1 || screen.Bounds.Height/screen.WorkingArea.Height > 1)
+            if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
             {
                 // Trick  to restore original bounds of screen.
                 bounds = new Rectangle(
@@ -149,10 +201,10 @@ namespace Pranas
         /// </summary>
         /// <param name="images"></param>
         /// <returns>Combined image</returns>
-        private static Image CombineBitmap(ICollection<Image> images)
+        private static Image CombineBitmap(Image[] images)
         {
-            if (images.Count == 1)
-                return images.First();
+            if (images.Length == 1)
+                return images[0];
 
             Image finalImage = null;
 
@@ -198,6 +250,14 @@ namespace Pranas
             }
 
             return finalImage;
+        }
+
+
+        private static List<Screen> Order(Screen[] screens)
+        {
+            List<Screen> scr = new List<Screen>(screens);
+            scr.Sort((x, y) => x.Bounds.Left - y.Bounds.Left);
+            return scr;
         }
 
         #endregion
