@@ -18,8 +18,6 @@ namespace Pranas
     ///     ScreenshotCapture
     /// </summary>
     /// 
-
-
     public static class ScreenshotCapture
     {
         static ConsoleColor defaultColor = ConsoleColor.Gray;
@@ -44,21 +42,19 @@ namespace Pranas
                     i++;
                 }
                 if (string.IsNullOrEmpty(file))
-                    throw new Exception("Paramenter '-file' is invalid");
+                    return 2;
 
                 var image = TakeScreenshot(!all);
                 image.Save(file);
-                Console.Out.WriteLine(file);
+                return 0;
             }
             catch (Exception e)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine(e.ToString());
                 Console.ForegroundColor = defaultColor;
-                return 1;
+                return 3;
             }
-
-            return 0;
         }
 
 
