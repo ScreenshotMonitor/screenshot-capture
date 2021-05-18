@@ -116,9 +116,9 @@ namespace Pranas
         /// <returns></returns>
         private static Bitmap ScreenCapture(Screen screen)
         {
-			var bounds = screen.Bounds;
+			var bounds = screen.ScaleBounds();
 
-	        if (screen.Bounds.Width / screen.WorkingArea.Width > 1 || screen.Bounds.Height / screen.WorkingArea.Height > 1)
+	        if (bounds.Width / screen.WorkingArea.Width > 1 || bounds.Height / screen.WorkingArea.Height > 1)
 	        {
 				Logger.Debug("Bounds not equal with WorkingArea");
 				Logger.Debug("Bounds: {0}",screen.Bounds);
